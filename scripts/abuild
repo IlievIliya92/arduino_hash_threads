@@ -1,0 +1,6 @@
+#!/bin/bash
+
+cd ${ARDUINO_PROJECT_ROOT}/arduino
+./run_cmake
+cd ${ARDUINO_PROJECT_ROOT}/arduino/Debug
+make
