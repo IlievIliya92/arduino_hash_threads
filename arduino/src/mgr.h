@@ -13,7 +13,7 @@ extern "C" {
 /************************** INTERFACE DATA DEFINITIONS ************************/
 
 /************************* INTERFACE FUNCTION PROTOTYPES **********************/
-typedef void (*result_cb_t)(uint8_t *input_string, uint32_t result, void *arg);
+typedef void (*result_cb_t)(uint8_t *input_string,  int inputLen, uint32_t result, void *arg);
 
 
 genericTask_t *getMgrTask(void);

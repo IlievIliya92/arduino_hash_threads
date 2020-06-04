@@ -26,10 +26,10 @@ typedef struct msg
   void *callback_arg;
 } msg_t;
 
-typedef enum dioStates_t {
+typedef enum states_t {
     OFF = 0,
     ON
-} dioStates_t;
+} states_t;
 
 
 /******************************** GLOBALDATA *******************************/
@@ -46,7 +46,7 @@ static QueueHandle_t xMsgQueue = NULL;
 
 /******************************* LOCAL FUNCTIONS ******************************/
 static
-void dioSetValue(dioStates_t state)
+void dioSetValue(states_t state)
 {
     state == ON ? PORTB |=  _BV(PORTB5) : (PORTB &= ~_BV(PORTB5));
 
@@ -59,12 +59,15 @@ static void mgr_processInput(void *arg)
    {
         msg_t msg;
         uint32_t hash;
+        int i = 0;
 
         memset(&msg, 0x0, sizeof(msg_t));
         xQueueReceive(xMsgQueue, &msg, portMAX_DELAY);
-        hash = hashcalc(msg.input, msg.inputLen);
 
-        msg.callback(msg.input, hash, msg.callback_arg);
+        for (i = 0; i < ITERATIONS; i++)
+            hash = hashcalc(msg.input, msg.inputLen);
+
+        msg.callback(msg.input, msg.inputLen, hash, msg.callback_arg);
    }
 
    return;
@@ -83,7 +86,7 @@ static void mgr_processInputInit(void)
 
 static void mgr_Init(void)
 {
-    xMsgQueue = xQueueCreate(5, sizeof(msg_t));
+    xMsgQueue = xQueueCreate(QUEUE_BUFFS, sizeof(msg_t));
 
     return;
 }
@@ -105,14 +108,15 @@ static int inputAsync_calc(const uint8_t *input_string, int len, result_cb_t cal
    }
 }
 
-static void resultCallback(uint8_t *input_string, uint32_t result, void *arg)
+static void resultCallback(uint8_t *input_string, int inputLen, uint32_t result, void *arg)
 {
     genericCmdMsg_t cmdMsg;
-    cmdMsg.eventType = newOutput;
 
-    avrSerialxPrintf(&xSerialPort, "%s -> ", input_string);
-    avrSerialxPrintf(&xSerialPort, "%d", result);
-    avrSerialxPrintf(&xSerialPort, "\r\n");
+    memset(&cmdMsg, 0x00, sizeof(genericCmdMsg_t));
+    cmdMsg.eventType = newOutput;
+    cmdMsg.inputLen = inputLen;
+    cmdMsg.hash = result;
+    memcpy(cmdMsg.input, input_string, inputLen);
 
     xQueueSend(xCmdQueue, &cmdMsg, portMAX_DELAY);
 
@@ -122,19 +126,29 @@ static void resultCallback(uint8_t *input_string, uint32_t result, void *arg)
 static void mgr_Task(void *pvParameters)
 {
     (void) pvParameters;
+    states_t processing = OFF;
 
     genericCmdMsg_t cmdMsg;
     memset(&cmdMsg, 0x0, sizeof(genericCmdMsg_t));
 
     while(1) {
         xQueueReceive(xCmdQueue, &cmdMsg, portMAX_DELAY);
+
         if (cmdMsg.eventType == newInput) {
             dioSetValue(ON);
+            processing = ON;
             inputAsync_calc(cmdMsg.input, cmdMsg.inputLen, resultCallback, NULL);
         }
         else if (cmdMsg.eventType == newOutput) {
+            processing = OFF;
+            avrSerialxPrintf(&xSerialPort, "%s -> ", cmdMsg.input);
+            avrSerialxPrintf(&xSerialPort, "%d", cmdMsg.hash);
+
             dioSetValue(OFF);
         }
+        avrSerialxPrintf(&xSerialPort, "\r\n");
+        avrSerialxPrintf(&xSerialPort, "Processing: %s", processing == ON ? "ON" : "OFF");
+        avrSerialxPrintf(&xSerialPort, "\r\n");
     }
 
     return;

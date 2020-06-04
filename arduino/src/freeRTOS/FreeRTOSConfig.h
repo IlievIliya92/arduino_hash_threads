@@ -57,7 +57,7 @@
 #define configUSE_MUTEXES                   1
 #define configUSE_RECURSIVE_MUTEXES         1
 #define configUSE_COUNTING_SEMAPHORES       1
-#define configUSE_QUEUE_SETS                0
+#define configUSE_QUEUE_SETS                1
 #define configQUEUE_REGISTRY_SIZE           0
 #define configUSE_TIME_SLICING              1
 #define configCHECK_FOR_STACK_OVERFLOW      1
@@ -98,7 +98,7 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelayUntil                 1
 #define INCLUDE_vTaskDelay                      1
 #define INCLUDE_xTaskGetSchedulerState          0
-#define INCLUDE_xTaskGetIdleTaskHandle          0 // create an idle task handle.
+#define INCLUDE_xTaskGetIdleTaskHandle          1 // create an idle task handle.
 #define INCLUDE_xTaskGetCurrentTaskHandle       0
 #define INCLUDE_uxTaskGetStackHighWaterMark     1
 

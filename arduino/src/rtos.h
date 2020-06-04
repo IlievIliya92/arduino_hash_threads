@@ -9,13 +9,14 @@ extern "C" {
 #include "generic_t.h"
 
 /*********************************** DEFINES **********************************/
-typedef enum tasks_t {
+typedef enum taskId_t
+{
     MGR = 0,
     PROCESS,
     GET_CMD,
     SCHEDULER,
     TASKS
-} tasks_t;
+} taskId_t;
 
 /************************** INTERFACE DATA DEFINITIONS ************************/
 

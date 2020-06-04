@@ -5,15 +5,13 @@
 extern "C" {
 #endif
 
-
-
 /******************************** INCLUDE FILES *******************************/
 #include "freeRTOS/task.h"
 #include "freeRTOS/semphr.h"
 
 /*********************************** DEFINES **********************************/
 #define IO_SIZE      15
-#define HASH_SIZE    65
+#define QUEUE_BUFFS  5
 
 /************************** INTERFACE DATA DEFINITIONS ************************/
 typedef void (*voidVoid_t)(void);
@@ -40,6 +38,7 @@ typedef struct genericCmdMsg
    Event_t eventType; // 1: new input, 2: calculation result
    uint8_t input[IO_SIZE];
    int inputLen;
+   uint32_t hash;
 } genericCmdMsg_t;
 
 #ifdef __cplusplus

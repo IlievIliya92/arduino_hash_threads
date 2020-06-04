@@ -4,7 +4,7 @@
 
 /******************************** LOCAL DEFINES *******************************/
 #define get16bits(d) ((((uint32_t)(((const uint8_t *)(d))[1])) << 8) \
-                       +(uint32_t)(((const uint8_t *)(d))[0]) )
+                       + (uint32_t)(((const uint8_t *)(d))[0]) )
 /******************************** GLOBALDATA *******************************/
 
 /********************************* LOCAL DATA *********************************/
@@ -41,14 +41,14 @@ uint32_t hashcalc (const uint8_t *data, int len)
     switch (rem) {
         case 3: hash += get16bits (data);
                 hash ^= hash << 16;
-                hash ^= ((signed char)data[sizeof (uint16_t)]) << 18;
+                hash ^= ((int32_t)data[sizeof (uint16_t)]) << 18;
                 hash += hash >> 11;
                 break;
         case 2: hash += get16bits (data);
                 hash ^= hash << 11;
                 hash += hash >> 17;
                 break;
-        case 1: hash += (signed char)*data;
+        case 1: hash += (int32_t)*data;
                 hash ^= hash << 10;
                 hash += hash >> 1;
     }

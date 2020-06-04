@@ -19,7 +19,7 @@ set(F_CPU 16000000UL)
 set(BAUD 115200)
 set(MCUFOS __AVR_ATmega328P__)
 set(MCU atmega328p)
-
+set(ITERATIONS 10000)
 set(DEVICE_ID 1U)
 
 # Pass defines to compiler
@@ -27,6 +27,7 @@ add_definitions(
     -DF_CPU=${F_CPU}
     -DBAUD=${BAUD}
     -D${MCUFOS}
+    -DITERATIONS=${ITERATIONS}
     -DDEVICE_ID=${DEVICE_ID}
 )
 set(CMAKE_EXE_LINKER_FLAGS -mmcu=${MCU})
@@ -36,11 +37,11 @@ add_compile_options(
     -std=gnu99 # C99 standard
     -Os
     -Wall
-#    -Wno-main
-#    -Wundef
-#    -Wstrict-prototypes
-#    -Werror
-#    -Wfatal-errors
+    -Wno-main
+    -Wundef
+    -Wstrict-prototypes
+    -Werror
+    -Wfatal-errors
     -Wl,--relax,--gc-sections
     -g
     -gdwarf-2

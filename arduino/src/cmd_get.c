@@ -14,13 +14,11 @@
 #include "cmd_get.h"
 
 /******************************** LOCAL DEFINES *******************************/
-#define CMD_QUEUE_SIZE  2
 
 /******************************** GLOBALDATA *******************************/
 extern xComPortHandle xSerialPort;
 
 /********************************* LOCAL DATA *********************************/
-static SemaphoreHandle_t xCmdSemaphore;
 
 /******************************* INTERFACE DATA *******************************/
 QueueHandle_t xCmdQueue = NULL;
@@ -37,7 +35,7 @@ static int cmd_getReceiveInput(uint8_t *buff, uint8_t len)
         while (!xSerialGetChar(&xSerialPort, &c))
             vTaskDelay(1);
 
-        if (c == '*') break;
+        if (c == '\r') break;
         if ((c == '\b') && i) {
             --i;
             continue;
@@ -56,9 +54,7 @@ static int cmd_getReceiveInput(uint8_t *buff, uint8_t len)
 static void cmd_getInit(void)
 {
     xSerialPort = xSerialPortInitMinimal(USART0, BAUD, portSERIAL_BUFFER_TX, portSERIAL_BUFFER_RX);
-
-    vSemaphoreCreateBinary(xCmdSemaphore);
-    xCmdQueue = xQueueCreate(CMD_QUEUE_SIZE, sizeof(genericCmdMsg_t));
+    xCmdQueue = xQueueCreate(QUEUE_BUFFS, sizeof(genericCmdMsg_t));
 
     return;
 }
@@ -71,19 +67,13 @@ static void cmd_getTask(void *pvParameters)
 
     while(1)
     {
-        if( xSemaphoreTake(xCmdSemaphore, (TickType_t)10) == pdTRUE)
-        {
-            cmdMsg.inputLen = cmd_getReceiveInput(cmd_buff, IO_SIZE);
+        cmdMsg.inputLen = cmd_getReceiveInput(cmd_buff, IO_SIZE);
 
-            memset(cmdMsg.input, 0x00, sizeof(cmdMsg.input));
-            memcpy(cmdMsg.input, cmd_buff, cmdMsg.inputLen );
-            cmdMsg.eventType = newInput;
+        memset(cmdMsg.input, 0x00, sizeof(cmdMsg.input));
+        memcpy(cmdMsg.input, cmd_buff, cmdMsg.inputLen );
+        cmdMsg.eventType = newInput;
 
-
-            xQueueSend(xCmdQueue, &cmdMsg, portMAX_DELAY);
-            xSemaphoreGive(xCmdSemaphore);
-        }
-
+        xQueueSend(xCmdQueue, &cmdMsg, portMAX_DELAY);
     }
 
     return;
